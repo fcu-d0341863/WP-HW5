@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      #map {
+		width: 100%;
+        height: 800px;
+      }
+    </style>
+    <script>
+      var map;
+      var infoWindow;
+      var service;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+		  /*¤¤¤ßÂI*/
+          center: {lat: 24.180963, lng: 120.628189},
+          zoom: 14,
+        });
+		
+        infoWindow = new google.maps.InfoWindow();
+        service = new google.maps.places.PlacesService(map);
+		
+        map.addListener('idle',Search);
+      }
+      function Search() {
+        var gas = {bounds: map.getBounds(),keyword: 'Chinese gasstation'};
+		var post = {bounds: map.getBounds(),keyword: 'Xitun district postoffice'};
+        
+		service.radarSearch(gas,gasback);
+		service.radarSearch(post,postback);
+      }
+      function gasback(results, status) {
+        if (status !== google.maps.places.PlacesServiceStatus.OK) {
+          console.error(status);
+          return;
+        }
+        for (var i = 0, result; result = results[i]; i++) {
+			addgas(result);
+        }
+      }
+	  function addgas(place) {
+        var marker = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location,
+          icon:{url: 'gas station.jpg'}
+        });
+        google.maps.event.addListener(marker, 'mouseover', function() {
+          service.getDetails(place, function(result, status) {
+            if (status !== google.maps.places.PlacesServiceStatus.OK) {
+              console.error(status);
+              return;
+            }
+            infoWindow.setContent(result.name);
+            infoWindow.open(map, marker);
+          });
+        });
+      }
+	  
+	  function postback(results, status) {
+        if (status !== google.maps.places.PlacesServiceStatus.OK) {
+          console.error(status);
+          return;
+        }
+        for (var i = 0, result; result = results[i]; i++) {
+			addpost(result);
+        }
+      }
+	  
+      function addpost(place) {
+        var marker = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location,
+          icon: {url: 'post office.jpg'}
+        });
+        google.maps.event.addListener(marker, 'mouseover', function() {
+          service.getDetails(place,function(result, status) {
+            if (status !== google.maps.places.PlacesServiceStatus.OK) {
+              console.error(status);
+              return;
+            }
+            infoWindow.setContent(result.name);
+            infoWindow.open(map, marker);
+          });
+        });
+      }
+  </script>
+  </head>
+  <body>
+    <div id="map"></div>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBDe9rAW0hewE7a6msd2fXLkkVAT3Hk520&callback=initMap&libraries=places,visualization" async defer></script>
+  </body>
+</html>
